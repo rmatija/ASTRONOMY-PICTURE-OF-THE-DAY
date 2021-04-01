@@ -4,12 +4,15 @@ import axios from 'axios';
 
 
 class App extends Component {
-
-  state = {
-      data: '',
-      imgurl: '',
-      explanation: ''
-    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            date: '',
+            imgurl: '',
+            explanation: '',
+            show: false
+        }
+    }
       
   componentDidMount() {
     fetch('https://api.nasa.gov/planetary/apod?api_key=bj1T8UV0iK0Nybs09IbbVfrio0XaQDirc8zkiRz3')
@@ -17,68 +20,54 @@ class App extends Component {
     .then((response) => response.json()) 
     .then((data) => { 
         console.log(data);
-        this.setState({ 
-          imgurl: data.url,
+        this.setState({
           date: data.date,
-          explanation: data.explanation
-        }); 
+          explanation: data.explanation,
+          show: true
+        });
     });
   }
 
+  searchDateData = () => {
+    let url = `https://api.nasa.gov/planetary/apod?date=${this.state.date}&api_key=bj1T8UV0iK0Nybs09IbbVfrio0XaQDirc8zkiRz3`;
+    
+    axios.get(url)
+      .then(response  => {
+        console.log('nesto', response);
+          this.setState({ 
+              imgurl: response.data.url,
+              date: response.data.date,
+              explanation: response.data.explanation
+          });
+      }).catch(error => {
+          console.log(error.response)}
+      )
+  };
+
+  handleDateChange = date => {
+      this.setState({ date: date });
+  }
   render () {
-
-    const displayPicture = () => {
-
-      let datePicker = document.getElementById("date");
-      let date = datePicker.value;
-      let url = `https://api.nasa.gov/planetary/apod?date=${date}&api_key=bj1T8UV0iK0Nybs09IbbVfrio0XaQDirc8zkiRz3`;
-      
-      axios.get(url)
-          .then(function(response) {
-            
-              let image = response.data.url;
-              let newDate = response.data.date; 
-              let explanation = response.data.explanation;            
-
-              if(image) {
-                document.getElementById("image").src = image;
-                document.getElementById("image").style.display = "initial";
-                document.getElementById("explanation").style.display = "block";
-                document.getElementById("newDate").innerHTML = newDate;
-                document.getElementById("newDate").style.display = "block";
-                document.getElementById("explanation").innerHTML = explanation;
-                
-                //Removing default
-                document.getElementById("default_image").style.display = "none";
-                document.getElementById("default_date").style.display = "none";
-                document.getElementById("default_explanation").style.display = "none";
-              } 
-
-          }).catch(error => {
-            console.log(error.response)})
-    };
-
     return (
       <div className="App">
         
         <h1>ASTRONOMY PICTURE OF THE DAY</h1>
 
-        <div>
+        {this.state.show && <div>
           <h4>Please choose a date</h4>
-          <input id="date" type="date"/>
-          <button onClick={displayPicture} id="button" href="">Search</button>
-        </div>
+          <input id="date" type="date" onChange={event => this.handleDateChange(event.target.value)} />
+          <button onClick={this.searchDateData} id="button" href="">Search</button>
+        </div>}
         
-        <img src="" id="image" alt="photo_of_the_day" style={{display: 'none'}} />
-        <p id="newDate" style={{display: 'none'}}></p>
-        <p id="explanation" style={{display: 'none'}}></p>
-
-        <div id="default">
-          <img src={this.state.imgurl} id="default_image" alt="default_image"/>
-          <p id="default_date"> {this.state.date}</p>
-          <p id="default_explanation"> {this.state.explanation} </p>
-        </div>
-
+        <div>
+          <p>{this.state.date}</p>
+          <div className="container">
+            <img src={this.state.imgurl} alt="photo_of_the_day" />
+            <p>{this.state.explanation}</p>
+          </div>
+          
+        </div>        
+        
       </div>
     );
   }
