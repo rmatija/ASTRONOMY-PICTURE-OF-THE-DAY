@@ -21,6 +21,7 @@ class App extends Component {
     .then((data) => { 
         console.log(data);
         this.setState({
+          imgurl: data.url,
           date: data.date,
           explanation: data.explanation,
           show: true
@@ -33,7 +34,6 @@ class App extends Component {
     
     axios.get(url)
       .then(response  => {
-        console.log('nesto', response);
           this.setState({ 
               imgurl: response.data.url,
               date: response.data.date,
